@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "de.xyndra.backroomsutils.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "backroomsutils.refmap.json",
+  "mixins": [
+    "ChunkGeneratorsMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
