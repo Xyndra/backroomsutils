@@ -13,8 +13,7 @@ enum class CardinalDirection {
     WEST
 }
 
-enum class Direction {
-     NONE,
+enum class Direction { NONE,
     // These are dead ends
     // XXXXXXXXXXXX
     // ########XXXX
@@ -99,7 +98,6 @@ enum class Direction {
             val west = getDirection(BlockPos(newX, newY, newZ - 8), adapter, pLevel)
 
             val direction = waveFunctionCollapse(north, east, south, west)
-            // hotStore[BlockPos(newX, newY, newZ)] = direction
 
             return direction
         }
