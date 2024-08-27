@@ -1,14 +1,13 @@
 package de.xyndra.backroomsutils.generation.adapters
 
-import com.mojang.logging.LogUtils
 import de.xyndra.backroomsutils.generation.Direction
 import de.xyndra.backroomsutils.generation.DirectionAdapter
 import net.minecraft.Util
 import net.minecraft.core.BlockPos
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.RandomSource
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.WorldGenLevel
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.Mirror
 import net.minecraft.world.level.block.Rotation
@@ -17,22 +16,10 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager
 
 object Level0Adapter : DirectionAdapter {
-    override fun place(pLevel: WorldGenLevel, startX: Int, startY: Int, startZ: Int, direction: Direction) {
+    override fun place(pLevel: Level, startX: Int, startY: Int, startZ: Int, direction: Direction) {
         val pos = BlockPos(startX, startY, startZ)
-        when (direction) {
-            Direction.NONE -> pLevel.setBlock(pos, Blocks.BEDROCK.defaultBlockState(), 2)
-            Direction.NORTH -> pLevel.setBlock(pos, Blocks.LIME_WOOL.defaultBlockState(), 2)
-            Direction.EAST -> pLevel.setBlock(pos, Blocks.BLUE_WOOL.defaultBlockState(), 2)
-            Direction.SOUTH -> pLevel.setBlock(pos, Blocks.YELLOW_WOOL.defaultBlockState(), 2)
-            Direction.WEST -> pLevel.setBlock(pos, Blocks.RED_WOOL.defaultBlockState(), 2)
-            Direction.TWO_X -> pLevel.setBlock(pos, Blocks.ORANGE_CONCRETE.defaultBlockState(), 2)
-            Direction.TWO_Z -> pLevel.setBlock(pos, Blocks.PURPLE_CONCRETE.defaultBlockState(), 2)
-            Direction.THREE_NORTH -> pLevel.setBlock(pos, Blocks.PINK_STAINED_GLASS.defaultBlockState(), 2)
-            Direction.THREE_EAST -> pLevel.setBlock(pos, Blocks.BLACK_STAINED_GLASS.defaultBlockState(), 2)
-            Direction.THREE_SOUTH -> pLevel.setBlock(pos, Blocks.MAGENTA_STAINED_GLASS.defaultBlockState(), 2)
-            Direction.THREE_WEST -> pLevel.setBlock(pos, Blocks.CYAN_STAINED_GLASS.defaultBlockState(), 2)
-            Direction.FULL -> pLevel.setBlock(pos, Blocks.TARGET.defaultBlockState(), 2)
-        }
+
+        super.place(pLevel, startX, startY, startZ, direction)
 
         val manager: StructureTemplateManager = pLevel.server?.structureManager ?: return
         val template: StructureTemplate = when (direction) {
@@ -55,7 +42,8 @@ object Level0Adapter : DirectionAdapter {
             Rotation.CLOCKWISE_180 -> pos.offset(7, 1, 7)
             Rotation.COUNTERCLOCKWISE_90 -> pos.offset(0, 1, 7)
         }
-        template.placeInWorld(pLevel, structurePos, structurePos, settings, RandomSource.create(Util.getMillis()), 2)
+        assert(pLevel is ServerLevel)
+        template.placeInWorld(pLevel as ServerLevel, structurePos, structurePos, settings, RandomSource.create(Util.getMillis()), 2)
     }
 
     override fun getType(blockPos: BlockPos, pLevel: Level): Direction? {
@@ -69,24 +57,6 @@ object Level0Adapter : DirectionAdapter {
                 }
             }
         }
-        return when (block) {
-            Blocks.BEDROCK -> Direction.NONE
-            Blocks.LIME_WOOL -> Direction.NORTH
-            Blocks.BLUE_WOOL -> Direction.EAST
-            Blocks.YELLOW_WOOL -> Direction.SOUTH
-            Blocks.RED_WOOL -> Direction.WEST
-            Blocks.ORANGE_CONCRETE -> Direction.TWO_X
-            Blocks.PURPLE_CONCRETE -> Direction.TWO_Z
-            Blocks.PINK_STAINED_GLASS -> Direction.THREE_NORTH
-            Blocks.BLACK_STAINED_GLASS -> Direction.THREE_EAST
-            Blocks.MAGENTA_STAINED_GLASS -> Direction.THREE_SOUTH
-            Blocks.CYAN_STAINED_GLASS -> Direction.THREE_WEST
-            Blocks.TARGET -> Direction.FULL
-            Blocks.AIR -> {
-                LogUtils.getLogger().warn("Block at $blockPos is air")
-                return null
-            }
-            else -> null
-        }
+        return super.getType(blockPos, pLevel)
     }
 }

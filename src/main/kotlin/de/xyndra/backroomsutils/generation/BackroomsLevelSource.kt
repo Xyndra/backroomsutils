@@ -1,19 +1,16 @@
 package de.xyndra.backroomsutils.generation
 
+import com.mojang.logging.LogUtils
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.core.BlockPos
-import net.minecraft.core.Holder
-import net.minecraft.resources.RegistryOps
 import net.minecraft.server.level.WorldGenRegion
 import net.minecraft.world.level.LevelHeightAccessor
 import net.minecraft.world.level.NoiseColumn
 import net.minecraft.world.level.StructureManager
 import net.minecraft.world.level.WorldGenLevel
-import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.level.biome.BiomeManager
-import net.minecraft.world.level.biome.Biomes
-import net.minecraft.world.level.biome.FixedBiomeSource
+import net.minecraft.world.level.biome.BiomeSource
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.chunk.ChunkAccess
@@ -24,13 +21,11 @@ import net.minecraft.world.level.levelgen.RandomState
 import net.minecraft.world.level.levelgen.blending.Blender
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
+import java.util.function.BiConsumer
 import java.util.function.Function
 
 // TODO: Disable mob spawning
-class BackroomsLevelSource(p_255723_: Holder.Reference<Biome?>) : ChunkGenerator(FixedBiomeSource(p_255723_)) {
-    override fun codec(): Codec<out ChunkGenerator?> {
-        return CODEC
-    }
+class BackroomsLevelSource(customBiomeSource: BiomeSource) : ChunkGenerator(customBiomeSource) {
 
     override fun buildSurface(
         pLevel: WorldGenRegion,
@@ -50,7 +45,17 @@ class BackroomsLevelSource(p_255723_: Holder.Reference<Biome?>) : ChunkGenerator
         pLevel.setBlock(BlockPos(i, 0, j + 8), DIRT, 2)
         pLevel.setBlock(BlockPos(i + 8, 0, j + 8), DIRT, 2)
 
-        // TODO: Detect dimension
+        // callbacks based on dimension
+        if (Callbacks.containsKey(pLevel.level.dimension().location().toString())) {
+            Callbacks[pLevel.level.dimension().location().toString()]!!.forEach { callback ->
+                callback.accept(pLevel, BlockPos(i, 0, j))
+                callback.accept(pLevel, BlockPos(i + 8, 0, j))
+                callback.accept(pLevel, BlockPos(i, 0, j + 8))
+                callback.accept(pLevel, BlockPos(i + 8, 0, j + 8))
+            }
+        } else {
+            LogUtils.getLogger().warn("No callbacks found for dimension ${pLevel.level.dimension().location()}")
+        }
     }
 
     override fun fillFromNoise(
@@ -78,6 +83,10 @@ class BackroomsLevelSource(p_255723_: Holder.Reference<Biome?>) : ChunkGenerator
     }
 
     override fun addDebugScreenInfo(pInfo: List<String>, pRandom: RandomState, pPos: BlockPos) {
+    }
+
+    override fun codec(): Codec<BackroomsLevelSource?> {
+        return CODEC
     }
 
     override fun applyCarvers(
@@ -108,23 +117,22 @@ class BackroomsLevelSource(p_255723_: Holder.Reference<Biome?>) : ChunkGenerator
     companion object {
         @JvmField
         val CODEC: Codec<BackroomsLevelSource?> =
-            RecordCodecBuilder.create { p_255576_: RecordCodecBuilder.Instance<BackroomsLevelSource?> ->
-                p_255576_.group(
-                    RegistryOps.retrieveElement(
-                        Biomes.PLAINS
-                    )
+            RecordCodecBuilder.create { levelSourceInstance: RecordCodecBuilder.Instance<BackroomsLevelSource> ->
+                return@create levelSourceInstance.group(
+                    BiomeSource.CODEC.fieldOf("biome_source").forGetter(BackroomsLevelSource::biomeSource)
                 ).apply(
-                    p_255576_,
-                    p_255576_.stable(
-                        Function { p_255723_: Holder.Reference<Biome?> ->
-                            BackroomsLevelSource(
-                                p_255723_
-                            )
-                        })
+                    levelSourceInstance,
+                    levelSourceInstance.stable(Function { biomeSource: BiomeSource -> BackroomsLevelSource(biomeSource) })
                 )
             }
-        private val AIR: BlockState = Blocks.AIR.defaultBlockState()
-        private val BARRIER: BlockState = Blocks.BARRIER.defaultBlockState()
         private val DIRT: BlockState = Blocks.DIRT.defaultBlockState()
+        private var Callbacks: Map<String, MutableList<BiConsumer<WorldGenLevel, BlockPos>>> = emptyMap()
+        fun addCallback(dimension: String, callback: BiConsumer<WorldGenLevel, BlockPos>) {
+            if (Callbacks.containsKey(dimension)) {
+                Callbacks[dimension]!!.add(callback)
+            } else {
+                Callbacks = Callbacks + (dimension to mutableListOf(callback))
+            }
+        }
     }
 }

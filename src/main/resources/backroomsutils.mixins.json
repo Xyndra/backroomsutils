@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "backroomsutils.refmap.json",
   "mixins": [
+    "BiomeSourcesMixin",
     "ChunkGeneratorsMixin"
   ],
   "client": [

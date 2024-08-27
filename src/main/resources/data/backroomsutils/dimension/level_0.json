@@ -1,6 +1,9 @@
 {
   "type": "backroomsutils:level_0",
   "generator": {
-    "type": "minecraft:backrooms"
+    "type": "minecraft:backrooms",
+    "biome_source": {
+      "type": "minecraft:backrooms_biomes"
+    }
   }
 }

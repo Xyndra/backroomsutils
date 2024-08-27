@@ -58,7 +58,7 @@ enum class Direction { NONE,
 
     companion object {
         private val bad = listOf(
-            NORTH, EAST, SOUTH, WEST, FULL
+            NORTH, EAST, SOUTH, WEST
         )
 
         private fun waveFunctionCollapse(north: Direction?, east: Direction?, south: Direction?, west: Direction?): Direction {
