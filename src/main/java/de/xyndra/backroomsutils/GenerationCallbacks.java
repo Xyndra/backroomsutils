@@ -12,7 +12,7 @@ public class GenerationCallbacks {
     // If you replace the block at the blockpos, it will not generate the block at the blockpos
     public static void register() {
         BackroomsLevelSource.Companion.addCallback("backroomsutils:level_0", GenerationCallbacks::sampleCallback);
-        BackroomsLevelSource.Companion.addCallback("backroomsutils:level_0", GenerationCallbacks::biomeCallback);
+        // BackroomsLevelSource.Companion.addCallback("backroomsutils:level_0", GenerationCallbacks::biomeCallback);
     }
 
     private static void biomeCallback(WorldGenLevel worldGenLevel, BlockPos blockPos) {

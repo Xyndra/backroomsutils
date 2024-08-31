@@ -24,7 +24,7 @@ import java.util.concurrent.Executor
 import java.util.function.BiConsumer
 import java.util.function.Function
 
-// TODO: Disable mob spawning
+// Mobs will spawn with wrong biomes
 class BackroomsLevelSource(customBiomeSource: BiomeSource) : ChunkGenerator(customBiomeSource) {
 
     override fun buildSurface(

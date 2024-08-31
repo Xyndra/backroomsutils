@@ -1,6 +1,5 @@
 package de.xyndra.backroomsutils.generation
 
-import com.mojang.logging.LogUtils
 import net.minecraft.core.BlockPos
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
@@ -41,7 +40,7 @@ interface DirectionAdapter {
             Blocks.TARGET -> Direction.FULL
             Blocks.DIRT -> null
             else -> {
-                LogUtils.getLogger().info("Unknown block: $block")
+                // LogUtils.getLogger().info("Unknown block: $block")
                 null
             }
         }

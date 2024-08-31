@@ -2,6 +2,8 @@ package de.xyndra.backroomsutils.events
 
 import de.xyndra.backroomsutils.AdapterChooser
 import de.xyndra.backroomsutils.BackroomsUtils
+import de.xyndra.backroomsutils.BigRoomUtil
+import de.xyndra.backroomsutils.BigRoomUtil.BigRoom
 import de.xyndra.backroomsutils.generation.Direction
 import de.xyndra.backroomsutils.generation.DirectionAdapter
 import de.xyndra.backroomsutils.util.CircularIterator
@@ -27,6 +29,16 @@ class GenerationEvents {
                 val renderDistance = 10
                 val playerPos = player.onPos
                 val startPos = BlockPos(playerPos.x - playerPos.x % 8, 0, playerPos.z - playerPos.z % 8)
+                // Spawn big rooms
+                for ((x, z) in CircularIterator(renderDistance * 2)) {
+                    val pos = startPos.offset(x * 8, 0, z * 8)
+                    val room: BigRoom? = BigRoomUtil.getBigRoom(level, pos)
+                    if (room != null && level.getBlockState(pos).block == Blocks.DIRT) {
+                        room.spawn(level, pos)
+                        break
+                    }
+                }
+                // Normal rooms
                 for ((x, z) in CircularIterator(renderDistance * 2)) {
                     val pos = startPos.offset(x * 8, 0, z * 8)
                     if (level.getBlockState(pos).block == Blocks.DIRT) {

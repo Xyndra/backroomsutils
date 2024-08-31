@@ -36,6 +36,7 @@ import org.slf4j.Logger
 class BackroomsUtils {
     init {
         GenerationCallbacks.register()
+        BigRooms.register()
         val modEventBus = FMLJavaModLoadingContext.get().modEventBus
 
         // Register the commonSetup method for modloading
